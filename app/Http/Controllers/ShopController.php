@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Shop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ShopController extends Controller
 {
@@ -35,6 +37,12 @@ class ShopController extends Controller
     public function store(Request $request)
     {
         //
+        $shop = new Shop();
+        $shop->user_id = Auth::id();
+        $shop->name = $request->input('name');
+        $shop->save();
+
+        return redirect()->back();
     }
 
     /**
@@ -46,6 +54,13 @@ class ShopController extends Controller
     public function show($id)
     {
         //
+        $shop = Shop::find($id);
+
+        if (empty($shop) OR $shop->user_id !== Auth::id()) {
+            return redirect('home');
+        }
+
+        return view('shops.show', compact('shop'));
     }
 
     /**
@@ -69,6 +84,16 @@ class ShopController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $shop = Shop::find($id);
+
+        if (empty($shop) OR $shop->user_id !== Auth::id()) {
+            return redirect()->back()->setSession('error', 'warning');
+        }
+
+        $shop->name = $request->input('name');
+        $shop->save();
+
+        return view('home');
     }
 
     /**
